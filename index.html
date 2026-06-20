@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yankee Sniper: 11 Shots for Freedom</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a0a00; color: #e8d5a3; font-family: 'Georgia', serif; overflow: hidden; }
+  canvas { display: block; cursor: crosshair; }
+  #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  #hud { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px 16px; border: 2px solid #8b6914; border-radius: 4px; }
+  #hud h3 { color: #f0c040; font-size: 14px; margin-bottom: 4px; }
+  #hud p { font-size: 13px; color: #e8d5a3; }
+  #target-info { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); border: 2px solid #8b6914; border-radius: 8px; padding: 16px 24px; max-width: 600px; text-align: center; display: none; }
+  #target-info h2 { color: #f0c040; font-size: 18px; margin-bottom: 8px; }
+  #target-info .state { color: #c8a84b; font-size: 13px; margin-bottom: 10px; }
+  #target-info .capital { font-size: 14px; margin-bottom: 10px; color: #a0d0a0; }
+  #target-info .oneliner { font-style: italic; color: #e0c080; font-size: 15px; margin-bottom: 10px; border-left: 3px solid #8b6914; padding-left: 10px; }
+  #target-info .dying { color: #ff9060; font-size: 13px; margin-bottom: 8px; }
+  #target-info .response { color: #60c0ff; font-size: 13px; font-style: italic; }
+  #splash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: all; }
+  #splash h1 { color: #f0c040; font-size: 36px; text-align: center; margin-bottom: 10px; text-shadow: 0 0 20px #8b6914; }
+  #splash p { color: #e8d5a3; font-size: 15px; text-align: center; max-width: 500px; margin-bottom: 8px; line-height: 1.6; }
+  #splash .subtitle { color: #c8a84b; font-size: 13px; margin-bottom: 24px; }
+  #start-btn { background: #8b2020; color: #f0c040; border: 2px solid #f0c040; padding: 12px 36px; font-size: 18px; font-family: Georgia, serif; cursor: pointer; border-radius: 4px; pointer-events: all; }
+  #start-btn:hover { background: #b03030; }
+  #score-bar { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 10px 16px; border: 2px solid #8b6914; border-radius: 4px; text-align: right; }
+  #score-bar p { font-size: 13px; }
+  #score-bar span { color: #f0c040; }
+  #crosshair { position: absolute; pointer-events: none; width: 60px; height: 60px; transform: translate(-50%,-50%); display: none; }
+  #shoot-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #8b2020; color: #f0c040; border: 2px solid #f0c040; padding: 10px 30px; font-size: 16px; font-family: Georgia, serif; cursor: pointer; border-radius: 4px; pointer-events: all; display: none; }
+  #shoot-btn:hover { background: #b03030; }
+  #ammo { position: absolute; bottom: 30px; left: 10px; background: rgba(0,0,0,0.7); padding: 8px 14px; border: 2px solid #8b6914; border-radius: 4px; }
+  #gameover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: all; }
+  #gameover h1 { color: #f0c040; font-size: 42px; text-align: center; margin-bottom: 20px; }
+  #gameover .stats { color: #e8d5a3; font-size: 16px; text-align: center; margin-bottom: 30px; }
+  #gameover .stats span { color: #f0c040; }
+  #replay-btn { background: #1a4a1a; color: #80ff80; border: 2px solid #80ff80; padding: 12px 36px; font-size: 18px; font-family: Georgia, serif; cursor: pointer; border-radius: 4px; }
+  #replay-btn:hover { background: #2a6a2a; }
+  .hit-flash { animation: flash 0.3s ease-out; }
+  @keyframes flash { 0%{background:rgba(255,80,0,0.5)} 100%{background:transparent} }
+  #instruction { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: #c8a84b; font-size: 13px; text-align: center; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="ui">
+  <div id="splash">
+    <h1>&#9733; YANKEE SNIPER &#9733;</h1>
+    <p class="subtitle">11 Shots for Freedom &mdash; Civil War, 1864</p>
+    <p>You are a Union sharpshooter tasked with taking out the planter class across all 11 Confederate states. Each target commands a plantation, owns enslaved people, and fights to preserve a dying order.</p>
+    <p style="margin-top:12px; color:#c8a84b; font-size:13px;">Move your mouse to aim. Click to shoot. Read each target's capital, your one-liner, their dying prophecy &mdash; and your last word.</p>
+    <br>
+    <button id="start-btn">TAKE AIM</button>
+  </div>
+
+  <div id="hud">
+    <h3>&#9733; YANKEE SNIPER &#9733;</h3>
+    <p id="state-label">State: &mdash;</p>
+    <p id="target-label">Target: &mdash;</p>
+  </div>
+
+  <div id="score-bar">
+    <p>Kills: <span id="kill-count">0</span> / 11</p>
+    <p>Accuracy: <span id="accuracy">100</span>%</p>
+  </div>
+
+  <div id="ammo" style="display:none">
+    <p>&#128249; Shots fired: <span id="shots-count">0</span></p>
+  </div>
+
+  <div id="target-info">
+    <h2 id="ti-name"></h2>
+    <p class="state" id="ti-state"></p>
+    <p class="capital" id="ti-capital"></p>
+    <p class="oneliner" id="ti-oneliner"></p>
+    <p class="dying" id="ti-dying"></p>
+    <p class="response" id="ti-response"></p>
+  </div>
+
+  <div id="instruction" style="display:none">Click on the target to shoot</div>
+
+  <button id="shoot-btn">NEXT TARGET &#8594;</button>
+
+  <div id="gameover">
+    <h1>&#9733; MISSION COMPLETE &#9733;</h1>
+    <div class="stats">
+      All 11 Confederate slave owners: <span style="color:#ff6060">eliminated.</span><br><br>
+      Shots fired: <span id="final-shots">0</span> &nbsp;|&nbsp; Kills: <span id="final-kills">11</span><br>
+      Accuracy: <span id="final-accuracy">0</span>%<br><br>
+      <span style="color:#80ff80; font-size:18px;">The Union endures. History moves forward.</span>
+    </div>
+    <button id="replay-btn">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script>
+const STATES = [
+  {
+    state: "Virginia", capital: "Richmond",
+    name: "Col. Beaumont Hale",
+    oneliner: "You built your mansion on other people's backs. Now you're going back to the dirt.",
+    dying: ""...someday a Virginian will lead this nation back to glory..."",
+    response: "Woodrow Wilson. 1913. You won't be breathing to see it."
+  },
+  {
+    state: "North Carolina", capital: "Raleigh",
+    name: "Planter Josiah Drummond",
+    oneliner: "Tar Heel? More like tar and feathered by history.",
+    dying: ""...this state will put men in the sky one day..."",
+    response: "Kitty Hawk, 1903. The Wright Brothers. You'll never leave the ground."
+  },
+  {
+    state: "South Carolina", capital: "Columbia",
+    name: "Gen. Preston Aldridge",
+    oneliner: "You fired the first shot at Fort Sumter. Fitting that the last shot finds you.",
+    dying: ""...our harbor will welcome the whole world someday..."",
+    response: "Charleston will be a gem of the South. Too bad you won't be there to ruin it."
+  },
+  {
+    state: "Georgia", capital: "Atlanta",
+    name: "Master Cornelius Webb",
+    oneliner: "Sherman's on his way. But I got here first.",
+    dying: ""...Atlanta will rise again, a city too busy to hate..."",
+    response: "That's literally what they'll say about it. You'll miss every busy minute."
+  },
+  {
+    state: "Florida", capital: "Tallahassee",
+    name: "Don Augusto Perryman",
+    oneliner: "Sunshine State. Dark ending.",
+    dying: ""...Florida will launch men to the moon one day..."",
+    response: "Cape Canaveral, 1969. One small step for mankind, one giant miss for you."
+  },
+  {
+    state: "Alabama", capital: "Montgomery",
+    name: "Col. Thaddeus Calhoun",
+    oneliner: "You made this city a symbol of oppression. History's going to flip that hard.",
+    dying: ""...a woman will refuse to give up her seat on a bus in this very city..."",
+    response: "Rosa Parks. 1955. The whole world will know her name. Nobody's remembering yours."
+  },
+  {
+    state: "Mississippi", capital: "Jackson",
+    name: "Overseer Rufus Stanton",
+    oneliner: "Last in a lot of things. First to get this bullet.",
+    dying: ""...a son of Mississippi will give the world music it never heard before..."",
+    response: "B.B. King. The Thrill is Gone — and so are you."
+  },
+  {
+    state: "Louisiana", capital: "Baton Rouge",
+    name: "Planter Armand Tureaud",
+    oneliner: "All that bayou land, and you'll be buried in the smallest plot of it.",
+    dying: ""...New Orleans will give the world a music like nothing before..."",
+    response: "Jazz. Louis Armstrong. A gift to humanity. Your contribution ends right here."
+  },
+  {
+    state: "Texas", capital: "Austin",
+    name: "Rancher Dalton Murchison",
+    oneliner: "Remember the Alamo? Remember this.",
+    dying: ""...Texas will power this whole nation someday..."",
+    response: "NASA. Oil. Renewables. Big state, big future. Small grave."
+  },
+  {
+    state: "Arkansas", capital: "Little Rock",
+    name: "Master Silas Fordham",
+    oneliner: "You thought this state was yours. History had other plans.",
+    dying: ""...a boy from Hope, Arkansas will lead the whole nation..."",
+    response: "Clinton. 1993. From Hope to the White House. You're going from here to nowhere."
+  },
+  {
+    state: "Tennessee", capital: "Nashville",
+    name: "Col. Harlan Fisk",
+    oneliner: "The Volunteer State. Funny — nobody volunteered to keep your system alive.",
+    dying: ""...Nashville will become the music capital of all America..."",
+    response: "Grand Ole Opry. Johnny Cash. The world will love this state. Not what you stood for."
+  }
+];
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let gameState = 'splash';
+let currentIdx = 0;
+let kills = 0;
+let shots = 0;
+let targetX, targetY, targetAlive = true;
+let showInfo = false;
+let infoTimer = 0;
+let targets = [];
+let particles = [];
+let muzzleFlash = 0;
+let screenShake = 0;
+let mouseX = W/2, mouseY = H/2;
+
+// Target object pool
+function spawnTarget(idx) {
+  const margin = 120;
+  const x = margin + Math.random() * (W - margin*2);
+  const y = 80 + Math.random() * (H * 0.45);
+  targets = [{
+    x, y, idx,
+    alive: true,
+    moving: true,
+    vx: (Math.random()-0.5)*1.5,
+    vy: (Math.random()-0.5)*0.8,
+    size: 32,
+    hitTimer: 0
+  }];
+}
+
+function spawnParticles(x, y) {
+  for(let i=0;i<18;i++){
+    particles.push({
+      x,y,
+      vx: (Math.random()-0.5)*6,
+      vy: (Math.random()-2)*5,
+      life: 1,
+      color: `hsl(${Math.random()*30+10},80%,60%)`,
+      size: Math.random()*5+2
+    });
+  }
+}
+
+function drawBackground() {
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0,0,0,H*0.6);
+  sky.addColorStop(0,'#0a1520');
+  sky.addColorStop(1,'#2a1800');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H*0.6);
+
+  // Ground
+  const ground = ctx.createLinearGradient(0,H*0.6,0,H);
+  ground.addColorStop(0,'#1a2a10');
+  ground.addColorStop(1,'#0a1508');
+  ctx.fillStyle = ground;
+  ctx.fillRect(0,H*0.6,W,H*0.4);
+
+  // Draw trees silhouette
+  ctx.fillStyle = '#0a1a08';
+  for(let i=0;i<12;i++){
+    const tx = (i/12)*W + 40;
+    const th = 60+Math.sin(i*1.7)*30;
+    ctx.beginPath();
+    ctx.moveTo(tx, H*0.6);
+    ctx.lineTo(tx-20, H*0.6-th*0.4);
+    ctx.lineTo(tx-10, H*0.6-th*0.4);
+    ctx.lineTo(tx-15, H*0.6-th*0.7);
+    ctx.lineTo(tx-5, H*0.6-th*0.7);
+    ctx.lineTo(tx, H*0.6-th);
+    ctx.lineTo(tx+5, H*0.6-th*0.7);
+    ctx.lineTo(tx+15, H*0.6-th*0.7);
+    ctx.lineTo(tx+10, H*0.6-th*0.4);
+    ctx.lineTo(tx+20, H*0.6-th*0.4);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  for(let i=0;i<80;i++){
+    const sx = (i*137.5)%W;
+    const sy = (i*97.3)%(H*0.55);
+    const ss = 0.5+Math.sin(i)*0.5;
+    ctx.beginPath();
+    ctx.arc(sx,sy,ss,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawTarget(t) {
+  if(!t.alive) return;
+  const {x,y,size,hitTimer} = t;
+  const data = STATES[t.idx];
+
+  ctx.save();
+  if(hitTimer>0) {
+    ctx.shadowColor='#ff4400';
+    ctx.shadowBlur=20;
+  }
+
+  // Body
+  ctx.fillStyle = hitTimer>0 ? '#ff6020' : '#8b5030';
+  ctx.beginPath();
+  ctx.ellipse(x, y+size*0.6, size*0.35, size*0.55, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Head
+  ctx.fillStyle = hitTimer>0 ? '#ffaa60' : '#c8956a';
+  ctx.beginPath();
+  ctx.arc(x, y, size*0.38, 0, Math.PI*2);
+  ctx.fill();
+
+  // Hat (Confederate)
+  ctx.fillStyle = '#3a3020';
+  ctx.beginPath();
+  ctx.ellipse(x, y-size*0.32, size*0.45, size*0.12, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(x-size*0.28, y-size*0.32-size*0.45, size*0.56, size*0.45);
+
+  // Name label
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(x-60, y+size+4, 120, 30);
+  ctx.fillStyle = '#f0c040';
+  ctx.font = 'bold 11px Georgia';
+  ctx.textAlign = 'center';
+  ctx.fillText(data.name, x, y+size+14);
+  ctx.fillStyle = '#c8a84b';
+  ctx.font = '10px Georgia';
+  ctx.fillText(data.state, x, y+size+26);
+  ctx.restore();
+}
+
+function drawCrosshair() {
+  if(gameState !== 'playing') return;
+  const cx = mouseX, cy = mouseY;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,200,0,0.85)';
+  ctx.lineWidth = 1.5;
+  const r = 28, gap = 8;
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-r-gap,cy); ctx.lineTo(cx-(gap),cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+gap,cy); ctx.lineTo(cx+r+gap,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-r-gap); ctx.lineTo(cx,cy-gap); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy+gap); ctx.lineTo(cx,cy+r+gap); ctx.stroke();
+  // Center dot
+  ctx.fillStyle = 'rgba(255,100,0,0.9)';
+  ctx.beginPath(); ctx.arc(cx,cy,3,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawMuzzleFlash() {
+  if(muzzleFlash<=0) return;
+  ctx.save();
+  ctx.globalAlpha = muzzleFlash;
+  ctx.fillStyle = '#ff8800';
+  ctx.beginPath();
+  ctx.arc(mouseX, mouseY, 20*muzzleFlash, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = muzzleFlash*0.3;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,W,H);
+  ctx.restore();
+}
+
+function updateParticles() {
+  particles = particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life-=0.04;
+  });
+}
+
+function drawParticles() {
+  particles.forEach(p=>{
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+}
+
+function showTargetInfo(idx) {
+  const d = STATES[idx];
+  document.getElementById('ti-name').textContent = d.name + ' — ELIMINATED';
+  document.getElementById('ti-state').textContent = 'State: ' + d.state;
+  document.getElementById('ti-capital').textContent = '&#127963; Capital: ' + d.capital;
+  document.getElementById('ti-oneliner').textContent = '"' + d.oneliner + '"';
+  document.getElementById('ti-dying').innerHTML = '<b>Last breath:</b> ' + d.dying;
+  document.getElementById('ti-response').innerHTML = '<b>Your reply:</b> "' + d.response + '"';
+  document.getElementById('target-info').style.display = 'block';
+  const btn = document.getElementById('shoot-btn');
+  if(currentIdx >= STATES.length) {
+    btn.textContent = 'MISSION COMPLETE ★';
+  } else {
+    btn.textContent = 'NEXT TARGET →';
+  }
+  btn.style.display = 'block';
+}
+
+function hideInfo() {
+  document.getElementById('target-info').style.display = 'none';
+  document.getElementById('shoot-btn').style.display = 'none';
+}
+
+function nextTarget() {
+  hideInfo();
+  if(currentIdx >= STATES.length) {
+    endGame();
+    return;
+  }
+  spawnTarget(currentIdx);
+  updateHUD();
+  document.getElementById('instruction').style.display = 'block';
+}
+
+function updateHUD() {
+  if(currentIdx < STATES.length) {
+    document.getElementById('state-label').textContent = 'State: ' + STATES[currentIdx].state;
+    document.getElementById('target-label').textContent = 'Target: ' + STATES[currentIdx].name;
+  }
+  document.getElementById('kill-count').textContent = kills;
+  document.getElementById('shots-count').textContent = shots;
+  document.getElementById('accuracy').textContent = shots>0?Math.round(kills/shots*100):100;
+}
+
+function endGame() {
+  gameState = 'gameover';
+  document.getElementById('final-shots').textContent = shots;
+  document.getElementById('final-kills').textContent = kills;
+  document.getElementById('final-accuracy').textContent = shots>0?Math.round(kills/shots*100):100;
+  document.getElementById('gameover').style.display = 'flex';
+}
+
+function startGame() {
+  gameState = 'playing';
+  currentIdx = 0; kills = 0; shots = 0;
+  targets = []; particles = [];
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('gameover').style.display = 'none';
+  document.getElementById('ammo').style.display = 'block';
+  document.getElementById('instruction').style.display = 'block';
+  spawnTarget(currentIdx);
+  updateHUD();
+}
+
+// Input
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+canvas.addEventListener('click', e => {
+  if(gameState !== 'playing') return;
+  if(document.getElementById('shoot-btn').style.display === 'block') return;
+
+  shots++;
+  muzzleFlash = 1;
+  screenShake = 8;
+
+  const t = targets[0];
+  if(t && t.alive) {
+    const dx = e.clientX - t.x, dy = e.clientY - t.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist < t.size * 1.5) {
+      t.alive = false;
+      kills++;
+      currentIdx++;
+      spawnParticles(t.x, t.y);
+      document.getElementById('instruction').style.display = 'none';
+      setTimeout(()=>{ showTargetInfo(currentIdx-1); updateHUD(); }, 400);
+    }
+  }
+  updateHUD();
+});
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('shoot-btn').addEventListener('click', nextTarget);
+document.getElementById('replay-btn').addEventListener('click', ()=>{
+  document.getElementById('gameover').style.display='none';
+  startGame();
+});
+
+// Game loop
+let lastTime = 0;
+function loop(ts) {
+  requestAnimationFrame(loop);
+  const dt = Math.min((ts-lastTime)/16,3); lastTime=ts;
+
+  ctx.save();
+  if(screenShake>0){ ctx.translate((Math.random()-0.5)*screenShake,(Math.random()-0.5)*screenShake); screenShake*=0.75; }
+
+  drawBackground();
+
+  if(gameState==='playing'){
+    targets.forEach(t=>{
+      if(!t.alive) return;
+      t.x += t.vx*dt; t.y += t.vy*dt;
+      if(t.x<60||t.x>W-60) t.vx*=-1;
+      if(t.y<60||t.y>H*0.55) t.vy*=-1;
+      if(t.hitTimer>0) t.hitTimer-=dt*0.05;
+    });
+  }
+
+  targets.forEach(drawTarget);
+  updateParticles();
+  drawParticles();
+  drawMuzzleFlash();
+  if(muzzleFlash>0) muzzleFlash-=0.15*dt;
+
+  drawCrosshair();
+  ctx.restore();
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
