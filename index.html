@@ -12,25 +12,355 @@ canvas { display: block; cursor: crosshair; }
 #hud { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px 16px; border: 2px solid #8b6914; border-radius: 4px; }
 #hud h3 { color: #f0c040; font-size: 14px; margin-bottom: 4px; }
 #hud p { font-size: 13px; color: #e8d5a3; }
-#target-info { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.92); border: 2px solid #8b6914; border-radius: 8px; padding: 18px 26px; max-width: 620px; width: 90%; text-align: center; display: none; max-height: 85vh; overflow-y: auto; }
-#target-info h2 { color: #f0c040; font-size: 17px; margin-bottom: 6px; }
-#target-info .state { color: #c8a84b; font-size: 12px; margin-bottom: 8px; }
-#target-info .capital { font-size: 13px; margin-bottom: 8px; color: #a0d0a0; }
-#target-info .oneliner { font-style: italic; color: #e0c080; font-size: 14px; margin-bottom: 8px; border-left: 3px solid #8b6914; padding-left: 10px; text-align: left; }
-#target-info .dying { color: #ff9060; font-size: 12px; margin-bottom: 6px; }
-#target-info .response { color: #60c0ff; font-size: 12px; font-style: italic; margin-bottom: 12px; }
-#target-info hr { border-color: #8b6914; margin: 10px 0; }
-#mcas-section { display: none; }
-#mcas-section h3 { color: #f0c040; font-size: 14px; margin-bottom: 10px; }
-.mcas-q { background: rgba(255,255,255,0.05); border: 1px solid #8b6914; border-radius: 6px; padding: 12px; margin-bottom: 10px; text-align: left; }
-.mcas-q .qtext { font-size: 13px; margin-bottom: 8px; color: #ffffff; }
-.mcas-choice { display: block; background: rgba(255,255,255,0.04); border: 1px solid #555; border-radius: 4px; padding: 6px 10px; margin-bottom: 5px; cursor: pointer; font-size: 12px; text-align: left; pointer-events: all; transition: background 0.2s; color: #ffffff; }
-.mcas-choice:hover { background: rgba(255,200,0,0.15); }
-.mcas-choice.correct { background: rgba(0,180,0,0.25); border-color: #00cc44; color: #80ff80; }
-.mcas-choice.wrong { background: rgba(200,0,0,0.25); border-color: #cc2200; color: #ff8060; }
-.mcas-explain { font-size: 11px; color: #a0d080; margin-top: 6px; display: none; font-style: italic; }
-#mcas-score { font-size: 13px; color: #f0c040; margin-top: 8px; display: none; }
-#splash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: all; }
+#score-bar { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 10px 16px; border: 2px solid #8b6914; border-radius: 4px; text-align: right; }
+#score-bar p { font-size: 13px; }
+#score-bar span { color: #f0c040; }
+#ammo { position: absolute; bottom: 20px; left: 10px; background: rgba(0,0,0,0.7); padding: 8px 14px; border: 2px solid #8b6914; border-radius: 4px; display: none; }
+#instruction { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); color: #c8a84b; font-size: 13px; text-align: center; pointer-events: none; display: none; }
+/* OVERLAY */
+#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; pointer-events: all; overflow-y: auto; }
+#overlay-inner { min-height: 100%; display: flex; align-items: flex-start; justify-content: center; padding: 20px; }
+#overlay-box { background: rgba(10,5,0,0.97); border: 2px solid #8b6914; border-radius: 10px; padding: 22px 28px; max-width: 640px; width: 100%; }
+#overlay-box h2 { color: #f0c040; font-size: 17px; margin-bottom: 6px; }
+.ov-state { color: #c8a84b; font-size: 12px; margin-bottom: 8px; }
+.ov-capital { font-size: 13px; margin-bottom: 8px; color: #a0d0a0; }
+.ov-oneliner { font-style: italic; color: #e0c080; font-size: 14px; margin-bottom: 8px; border-left: 3px solid #8b6914; padding-left: 10px; }
+.ov-dying { color: #ff9060; font-size: 12px; margin-bottom: 5px; }
+.ov-response { color: #60c0ff; font-size: 12px; font-style: italic; margin-bottom: 14px; }
+.ov-divider { border: none; border-top: 1px solid #8b6914; margin: 12px 0; }
+#mcas-header { color: #f0c040; font-size: 14px; margin-bottom: 4px; }
+#mcas-subheader { font-size: 11px; color: #888; margin-bottom: 12px; }
+.mcas-q { background: rgba(255,255,255,0.04); border: 1px solid #5a4010; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
+.mcas-qtext { font-size: 13px; margin-bottom: 9px; color: #ffffff; font-weight: bold; }
+.mcas-btn { display: block; width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 4px; padding: 7px 12px; margin-bottom: 5px; cursor: pointer; font-size: 12px; text-align: left; color: #ffffff; font-family: Georgia, serif; transition: background 0.15s; }
+.mcas-btn:hover:not(:disabled) { background: rgba(255,200,0,0.18); border-color: #8b6914; }
+.mcas-btn:disabled { cursor: default; }
+.mcas-btn.correct { background: rgba(0,160,0,0.25); border-color: #00cc44; color: #80ff80; }
+.mcas-btn.wrong { background: rgba(180,0,0,0.25); border-color: #cc2200; color: #ff7755; }
+.mcas-explain { font-size: 11px; color: #90d070; margin-top: 7px; font-style: italic; display: none; }
+#mcas-round-score { font-size: 12px; color: #f0c040; margin-top: 4px; margin-bottom: 10px; min-height: 18px; }
+#next-btn { display: none; width: 100%; background: #8b2020; color: #f0c040; border: 2px solid #f0c040; padding: 11px; font-size: 16px; font-family: Georgia, serif; cursor: pointer; border-radius: 5px; margin-top: 8px; }
+#next-btn:hover { background: #b03030; }
+/* SPLASH */
+#splash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.93); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: all; padding: 20px; }
 #splash h1 { color: #f0c040; font-size: 36px; text-align: center; margin-bottom: 10px; text-shadow: 0 0 20px #8b6914; }
-#splash p { color: #e8d5a3; font-size: 15px; text-align: center; max-width: 500px; margin-bottom: 8px; line-height: 1.6; }
-#splash .subtitle { color: #c8a84b; font-size: 13px; margin-bottom: 24px; }
+#splash p { color: #e8d5a3; font-size: 15px; text-align: center; max-width: 520px; margin-bottom: 8px; line-height: 1.6; }
+#splash .sub { color: #c8a84b; font-size: 13px; margin-bottom: 24px; }
+#start-btn { background: #8b2020; color: #f0c040; border: 2px solid #f0c040; padding: 12px 40px; font-size: 18px; font-family: Georgia, serif; cursor: pointer; border-radius: 4px; }
+#start-btn:hover { background: #b03030; }
+/* GAME OVER */
+#gameover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); display: none; overflow-y: auto; pointer-events: all; padding: 30px 20px; }
+#gameover-inner { max-width: 660px; margin: 0 auto; }
+#gameover h1 { color: #f0c040; font-size: 36px; text-align: center; margin-bottom: 16px; }
+.go-stats { color: #e8d5a3; font-size: 15px; text-align: center; margin-bottom: 16px; line-height: 1.8; }
+.go-stats span { color: #f0c040; }
+.go-mcas { background: rgba(0,60,140,0.25); border: 2px solid #4080cc; border-radius: 8px; padding: 16px 22px; margin-bottom: 16px; font-size: 14px; line-height: 1.7; }
+.go-mcas h2 { color: #80c0ff; font-size: 17px; margin-bottom: 8px; }
+.go-note { background: rgba(140,60,0,0.2); border: 2px solid #c87020; border-radius: 8px; padding: 14px 22px; margin-bottom: 22px; font-size: 13px; line-height: 1.75; color: #e8c090; }
+.go-note h3 { color: #f0a040; margin-bottom: 8px; }
+#replay-btn { display: block; width: 200px; margin: 0 auto; background: #1a4a1a; color: #80ff80; border: 2px solid #80ff80; padding: 12px; font-size: 18px; font-family: Georgia, serif; cursor: pointer; border-radius: 4px; text-align: center; }
+#replay-btn:hover { background: #2a6a2a; }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="ui">
+
+  <div id="splash">
+    <h1>&#9733; YANKEE SNIPER &#9733;</h1>
+    <p class="sub">11 Shots for Freedom &mdash; Civil War, 1864</p>
+    <p>You are a Union sharpshooter tasked with taking out the planter class across all 11 Confederate states.</p>
+    <p style="margin-top:10px;color:#c8a84b;font-size:13px;">Move your mouse to aim. Click to shoot. After each kill, answer 3 Massachusetts MCAS 8th-grade questions before moving on.</p>
+    <br>
+    <button id="start-btn">TAKE AIM</button>
+  </div>
+
+  <div id="hud">
+    <h3>&#9733; YANKEE SNIPER &#9733;</h3>
+    <p id="state-label">State: &mdash;</p>
+    <p id="target-label">Target: &mdash;</p>
+  </div>
+
+  <div id="score-bar">
+    <p>Kills: <span id="kill-count">0</span> / 11</p>
+    <p>MCAS: <span id="mcas-running">0</span> / <span id="mcas-possible">0</span></p>
+  </div>
+
+  <div id="ammo"><p>&#128249; Shots: <span id="shots-count">0</span></p></div>
+  <div id="instruction">Click on the target to shoot</div>
+
+  <!-- KILL INFO + MCAS OVERLAY -->
+  <div id="overlay">
+    <div id="overlay-inner">
+      <div id="overlay-box">
+        <h2 id="ov-name"></h2>
+        <p class="ov-state" id="ov-state"></p>
+        <p class="ov-capital" id="ov-capital"></p>
+        <p class="ov-oneliner" id="ov-oneliner"></p>
+        <p class="ov-dying" id="ov-dying"></p>
+        <p class="ov-response" id="ov-response"></p>
+        <hr class="ov-divider">
+        <p id="mcas-header">&#128218; MCAS CHECKPOINT &mdash; 8th Grade Massachusetts</p>
+        <p id="mcas-subheader">Answer all 3 questions to unlock the next target.</p>
+        <div id="mcas-questions"></div>
+        <p id="mcas-round-score"></p>
+        <button id="next-btn">NEXT TARGET &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameover">
+    <div id="gameover-inner">
+      <h1>&#9733; MISSION COMPLETE &#9733;</h1>
+      <div class="go-stats">
+        All 11 Confederate slave owners: <span style="color:#ff6060">eliminated.</span><br>
+        Shots fired: <span id="go-shots">0</span> &nbsp;|&nbsp; Kills: <span id="go-kills">11</span>
+      </div>
+      <div class="go-mcas">
+        <h2>&#128218; MCAS Final Score</h2>
+        <p>You answered <span id="go-mcas-score" style="color:#f0c040;font-size:18px">0</span> out of <strong style="color:#f0c040">33</strong> correctly &mdash; that's <span id="go-mcas-pct" style="color:#80ff80;font-size:16px">0%</span>.<br>
+        Massachusetts 8th-grade average: <strong style="color:#f0c040">~50&ndash;55%</strong> proficiency.</p>
+      </div>
+      <div class="go-note">
+        <h3>&#128202; A Note on Education &amp; History</h3>
+        <p>According to the National Assessment of Educational Progress (NAEP &mdash; "The Nation's Report Card"), Southern states consistently rank among the lowest in the country in 8th-grade reading and math. States like Mississippi, Louisiana, Alabama, and Arkansas regularly finish in the bottom five nationally.<br><br>
+        Massachusetts, by contrast, is the <strong>#1 ranked state</strong> for K&ndash;12 academic achievement. The gap correlates strongly with historical underinvestment in public education &mdash; particularly in states that once denied education to enslaved people by law and resisted federal desegregation orders for decades after the Civil War.<br><br>
+        <em>History has consequences. Education is how we change them.</em></p>
+      </div>
+      <button id="replay-btn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const STATES=[
+  {state:"Virginia",capital:"Richmond",name:"Col. Beaumont Hale",oneliner:"You built your mansion on other people's backs. Now you're going back to the dirt.",dying:"“...someday a Virginian will lead this nation back to glory...”",response:"Woodrow Wilson. 1913. You won’t be breathing to see it."},
+  {state:"North Carolina",capital:"Raleigh",name:"Planter Josiah Drummond",oneliner:"Tar Heel? More like tar and feathered by history.",dying:"“...this state will put men in the sky one day...”",response:"Kitty Hawk, 1903. The Wright Brothers. You’ll never leave the ground."},
+  {state:"South Carolina",capital:"Columbia",name:"Gen. Preston Aldridge",oneliner:"You fired the first shot at Fort Sumter. Fitting that the last shot finds you.",dying:"“...our harbor will welcome the whole world someday...”",response:"Charleston will be a gem of the South. Too bad you won’t be there to ruin it."},
+  {state:"Georgia",capital:"Atlanta",name:"Master Cornelius Webb",oneliner:"Sherman’s on his way. But I got here first.",dying:"“...Atlanta will rise again, a city too busy to hate...”",response:"That’s literally what they’ll say about it. You’ll miss every busy minute."},
+  {state:"Florida",capital:"Tallahassee",name:"Don Augusto Perryman",oneliner:"Sunshine State. Dark ending.",dying:"“...Florida will launch men to the moon one day...”",response:"Cape Canaveral, 1969. One small step for mankind, one giant miss for you."},
+  {state:"Alabama",capital:"Montgomery",name:"Col. Thaddeus Calhoun",oneliner:"You made this city a symbol of oppression. History’s going to flip that hard.",dying:"“...a woman will refuse to give up her seat on a bus in this very city...”",response:"Rosa Parks. 1955. The whole world will know her name. Nobody’s remembering yours."},
+  {state:"Mississippi",capital:"Jackson",name:"Overseer Rufus Stanton",oneliner:"Last in a lot of things. First to get this bullet.",dying:"“...a son of Mississippi will give the world music it never heard before...”",response:"B.B. King. The Thrill is Gone — and so are you."},
+  {state:"Louisiana",capital:"Baton Rouge",name:"Planter Armand Tureaud",oneliner:"All that bayou land, and you’ll be buried in the smallest plot of it.",dying:"“...New Orleans will give the world a music like nothing before...”",response:"Jazz. Louis Armstrong. A gift to humanity. Your contribution ends right here."},
+  {state:"Texas",capital:"Austin",name:"Rancher Dalton Murchison",oneliner:"Remember the Alamo? Remember this.",dying:"“...Texas will power this whole nation someday...”",response:"NASA. Oil. Renewables. Big state, big future. Small grave."},
+  {state:"Arkansas",capital:"Little Rock",name:"Master Silas Fordham",oneliner:"You thought this state was yours. History had other plans.",dying:"“...a boy from Hope, Arkansas will lead the whole nation...”",response:"Clinton. 1993. From Hope to the White House. You’re going from here to nowhere."},
+  {state:"Tennessee",capital:"Nashville",name:"Col. Harlan Fisk",oneliner:"The Volunteer State. Funny — nobody volunteered to keep your system alive.",dying:"“...Nashville will become the music capital of all America...”",response:"Grand Ole Opry. Johnny Cash. The world will love this state. Not what you stood for."}
+];
+
+const MCAS=[[{"q":"Which of the following best describes the main purpose of the Emancipation Proclamation (1863)?","choices":["A. To end slavery in all U.S. territories","B. To free enslaved people in Confederate states","C. To grant citizenship to formerly enslaved people","D. To punish Confederate soldiers"],"ans":"B","explain":"The Emancipation Proclamation freed enslaved people in rebel Confederate states but not in border states still in the Union."},{"q":"Solve: 3x + 7 = 22. What is x?","choices":["A. 3","B. 4","C. 5","D. 6"],"ans":"C","explain":"3x = 22 - 7 = 15, so x = 5."},{"q":"Which literary device is used in: 'The battlefield roared like a hungry lion'?","choices":["A. Metaphor","B. Personification","C. Simile","D. Alliteration"],"ans":"C","explain":"'Like a hungry lion' compares two unlike things using 'like' — that is a simile."}],[{"q":"What was the significance of the Battle of Gettysburg (1863)?","choices":["A. It ended the Civil War","B. It was the Union's first major victory","C. It turned the tide against the Confederacy in the East","D. It led directly to the Emancipation Proclamation"],"ans":"C","explain":"Gettysburg stopped Lee's northern invasion and is considered the turning point of the Civil War."},{"q":"A rectangle has a length of 12 cm and a width of 7 cm. What is its area?","choices":["A. 38 cm²","B. 74 cm²","C. 84 cm²","D. 96 cm²"],"ans":"C","explain":"Area = length × width = 12 × 7 = 84 cm²."},{"q":"In an informational text, what is the function of a thesis statement?","choices":["A. To provide background details","B. To present the central claim of the text","C. To summarize opposing viewpoints","D. To list supporting evidence"],"ans":"B","explain":"A thesis statement presents the central claim or argument that the rest of the text supports."}],[{"q":"Which event is considered the opening military engagement of the Civil War?","choices":["A. Battle of Bull Run","B. Attack on Fort Sumter","C. Battle of Antietam","D. Siege of Vicksburg"],"ans":"B","explain":"Confederate forces fired on Fort Sumter in Charleston Harbor on April 12, 1861 — the first military action of the Civil War."},{"q":"What is the value of 2⁵?","choices":["A. 10","B. 16","C. 25","D. 32"],"ans":"D","explain":"2⁵ = 2×2×2×2×2 = 32."},{"q":"Which of the following is an example of a primary source?","choices":["A. A textbook chapter about the Civil War","B. A documentary film about slavery","C. A letter written by a soldier during the Civil War","D. An encyclopedia entry about Abraham Lincoln"],"ans":"C","explain":"A primary source is an original document or artifact from the time period, such as a soldier's letter."}],[{"q":"The 13th Amendment to the U.S. Constitution (1865) did which of the following?","choices":["A. Granted women the right to vote","B. Abolished slavery throughout the United States","C. Gave formerly enslaved men the right to vote","D. Established equal protection under the law"],"ans":"B","explain":"The 13th Amendment abolished slavery and involuntary servitude, except as punishment for a crime."},{"q":"A bag has 4 red, 3 blue, and 5 green marbles. What is the probability of picking a blue marble?","choices":["A. 1/4","B. 3/12","C. 1/3","D. 5/12"],"ans":"B","explain":"Probability = 3 blue ÷ 12 total = 3/12."},{"q":"Which of the following best describes the author's purpose in a persuasive essay?","choices":["A. To entertain the reader with a story","B. To explain how something works","C. To convince the reader to agree with a position","D. To describe the sequence of historical events"],"ans":"C","explain":"A persuasive essay aims to convince the audience to accept the author's point of view or take action."}],[{"q":"During Reconstruction (1865–1877), which was a major challenge faced by formerly enslaved people?","choices":["A. Being forced to move to Northern states","B. Black Codes that restricted their freedoms","C. Lack of access to the Freedmen's Bureau","D. Loss of citizenship rights under the 13th Amendment"],"ans":"B","explain":"Southern states passed Black Codes — laws designed to restrict the rights and freedoms of Black Americans after the Civil War."},{"q":"Simplify: (4² + 3²) ÷ 5","choices":["A. 4","B. 5","C. 7","D. 25"],"ans":"B","explain":"4² = 16, 3² = 9, sum = 25, 25 ÷ 5 = 5."},{"q":"What does the word 'abolition' mean in the context of the Civil War era?","choices":["A. The expansion of slavery into new territories","B. The complete end to slavery","C. A law limiting the rights of formerly enslaved people","D. The process of rejoining the Union after the war"],"ans":"B","explain":"Abolition means the formal end or elimination of a practice — in this context, the end of slavery."}],[{"q":"What was the purpose of the Freedmen's Bureau, established in 1865?","choices":["A. To help Confederate soldiers return home","B. To assist formerly enslaved people with education, labor, and legal matters","C. To enforce the Black Codes in Southern states","D. To redistribute Southern land among Northern investors"],"ans":"B","explain":"The Freedmen's Bureau was a federal agency that helped 4 million formerly enslaved people transition to freedom."},{"q":"A train travels 240 miles in 4 hours. What is its average speed?","choices":["A. 50 mph","B. 55 mph","C. 60 mph","D. 65 mph"],"ans":"C","explain":"Speed = distance ÷ time = 240 ÷ 4 = 60 mph."},{"q":"In literature, what is the term for the central message or insight about life that an author conveys?","choices":["A. Plot","B. Theme","C. Setting","D. Conflict"],"ans":"B","explain":"The theme is the central idea or message about human experience that the author communicates through the story."}],[{"q":"The Missouri Compromise of 1820 was significant because it:","choices":["A. Ended the slave trade in Washington D.C.","B. Admitted California as a free state","C. Attempted to balance free and slave states in the Union","D. Repealed the Northwest Ordinance"],"ans":"C","explain":"The Missouri Compromise admitted Missouri as a slave state and Maine as a free state, maintaining balance in the Senate."},{"q":"Which of the following is equivalent to 0.75?","choices":["A. 3/5","B. 7/10","C. 3/4","D. 4/5"],"ans":"C","explain":"0.75 = 75/100 = 3/4."},{"q":"What is the main difference between a fact and an opinion in a text?","choices":["A. A fact is always more important than an opinion","B. A fact can be proven true or false; an opinion reflects a belief or judgment","C. An opinion is supported by evidence; a fact is not","D. A fact is always stated by an expert; an opinion is not"],"ans":"B","explain":"Facts are verifiable statements; opinions express personal views or judgments that cannot be proven."}],[{"q":"Which of the following best describes 'manifest destiny' in 19th-century America?","choices":["A. The belief that slavery should be abolished immediately","B. The idea that the U.S. was destined to expand across the continent","C. A movement to give women the right to vote","D. The policy of remaining neutral in European wars"],"ans":"B","explain":"Manifest Destiny was the 19th-century belief that U.S. expansion across North America was inevitable and divinely ordained."},{"q":"What is the least common multiple (LCM) of 6 and 8?","choices":["A. 12","B. 16","C. 24","D. 48"],"ans":"C","explain":"Multiples of 6: 6,12,18,24... Multiples of 8: 8,16,24... The LCM is 24."},{"q":"In an argument, what is the role of evidence?","choices":["A. To entertain the reader","B. To support and strengthen the claim","C. To present the opposing viewpoint","D. To restate the conclusion"],"ans":"B","explain":"Evidence (facts, statistics, examples, quotes) is used to support and prove the argument's central claim."}],[{"q":"The Kansas-Nebraska Act of 1854 was controversial because it:","choices":["A. Banned slavery north of the 36°30′ line","B. Allowed settlers to decide slavery through popular sovereignty","C. Made Texas a slave state","D. Created the Republican Party"],"ans":"B","explain":"The Kansas-Nebraska Act introduced popular sovereignty, effectively repealing the Missouri Compromise."},{"q":"A jacket originally priced at $80 is 25% off. What is the sale price?","choices":["A. $55","B. $60","C. $65","D. $70"],"ans":"B","explain":"25% of $80 = $20. $80 - $20 = $60."},{"q":"Which sentence type makes a statement or expresses a fact?","choices":["A. Interrogative","B. Exclamatory","C. Imperative","D. Declarative"],"ans":"D","explain":"A declarative sentence makes a statement or expresses a fact and ends with a period."}],[{"q":"What was the main cause of the Civil War according to most historians?","choices":["A. Disagreements over tariff policy","B. The assassination of Abraham Lincoln","C. The institution of slavery and its expansion into new territories","D. Conflicts over railroad construction"],"ans":"C","explain":"While multiple factors contributed, historians broadly agree that slavery — particularly its expansion — was the central cause."},{"q":"A recipe calls for 2/3 cup of sugar. You want to make 1.5 times the recipe. How much sugar?","choices":["A. 3/4 cup","B. 1 cup","C. 1 1/4 cups","D. 1 1/2 cups"],"ans":"B","explain":"2/3 × 3/2 = 6/6 = 1 cup."},{"q":"What does the prefix 'anti-' mean in words like 'antislavery'?","choices":["A. Supporting or promoting","B. Before or prior to","C. Against or opposed to","D. After or following"],"ans":"C","explain":"The prefix 'anti-' means against or opposed to."}],[{"q":"Which of the following best describes the role of 'conductors' on the Underground Railroad?","choices":["A. Railroad workers who transported goods","B. Union soldiers who guided escaped slaves to freedom","C. People who guided freedom seekers along secret routes to free states or Canada","D. Abolitionists who published antislavery newspapers"],"ans":"C","explain":"Conductors on the Underground Railroad were guides who led enslaved people escaping to freedom along secret routes."},{"q":"The ratio of boys to girls in a class is 3:4. There are 28 students total. How many are boys?","choices":["A. 10","B. 12","C. 14","D. 16"],"ans":"B","explain":"Total parts = 7. Boys = (3/7) × 28 = 12."},{"q":"Which of the following is an example of an inference a reader might make?","choices":["A. The story takes place in Virginia","B. The main character is described as 'tall and serious'","C. The character is nervous because she keeps looking at the door","D. The author uses first-person narration"],"ans":"C","explain":"An inference is a conclusion drawn from clues. Concluding nervousness from the character's actions is an inference."}]];
+
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+
+let gameState='splash';
+let currentIdx=0,kills=0,shots=0,mcasCorrect=0,mcasAnswered=0;
+let targets=[],particles=[],muzzleFlash=0,screenShake=0;
+let mouseX=W/2,mouseY=H/2;
+let roundAnswers=0; // count of answered q's this round (0-3)
+
+function spawnTarget(idx){
+  const margin=120,x=margin+Math.random()*(W-margin*2),y=80+Math.random()*(H*0.45);
+  targets=[{x,y,idx,alive:true,vx:(Math.random()-0.5)*1.5,vy:(Math.random()-0.5)*0.8,size:32}];
+}
+
+function spawnParticles(x,y){
+  for(let i=0;i<18;i++) particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()-2)*5,life:1,color:'hsl('+(Math.random()*30+10)+',80%,60%)',size:Math.random()*5+2});
+}
+
+function drawBG(){
+  const sky=ctx.createLinearGradient(0,0,0,H*0.6);sky.addColorStop(0,'#0a1520');sky.addColorStop(1,'#2a1800');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*0.6);
+  const gnd=ctx.createLinearGradient(0,H*0.6,0,H);gnd.addColorStop(0,'#1a2a10');gnd.addColorStop(1,'#0a1508');
+  ctx.fillStyle=gnd;ctx.fillRect(0,H*0.6,W,H*0.4);
+  ctx.fillStyle='#0a1a08';
+  for(let i=0;i<12;i++){const tx=(i/12)*W+40,th=60+Math.sin(i*1.7)*30;ctx.beginPath();ctx.moveTo(tx,H*0.6);ctx.lineTo(tx-20,H*0.6-th*0.4);ctx.lineTo(tx-10,H*0.6-th*0.4);ctx.lineTo(tx-15,H*0.6-th*0.7);ctx.lineTo(tx-5,H*0.6-th*0.7);ctx.lineTo(tx,H*0.6-th);ctx.lineTo(tx+5,H*0.6-th*0.7);ctx.lineTo(tx+15,H*0.6-th*0.7);ctx.lineTo(tx+10,H*0.6-th*0.4);ctx.lineTo(tx+20,H*0.6-th*0.4);ctx.closePath();ctx.fill();}
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  for(let i=0;i<80;i++){const sx=(i*137.5)%W,sy=(i*97.3)%(H*0.55),ss=0.5+Math.sin(i)*0.5;ctx.beginPath();ctx.arc(sx,sy,ss,0,Math.PI*2);ctx.fill();}
+}
+
+function drawTarget(t){
+  if(!t.alive)return;
+  const {x,y,size}=t;
+  ctx.save();
+  ctx.fillStyle='#8b5030';ctx.beginPath();ctx.ellipse(x,y+size*0.6,size*0.35,size*0.55,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#c8956a';ctx.beginPath();ctx.arc(x,y,size*0.38,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#3a3020';ctx.beginPath();ctx.ellipse(x,y-size*0.32,size*0.45,size*0.12,0,0,Math.PI*2);ctx.fill();
+  ctx.fillRect(x-size*0.28,y-size*0.32-size*0.45,size*0.56,size*0.45);
+  ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(x-60,y+size+4,120,30);
+  ctx.fillStyle='#f0c040';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(STATES[t.idx].name,x,y+size+14);
+  ctx.fillStyle='#c8a84b';ctx.font='10px Georgia';ctx.fillText(STATES[t.idx].state,x,y+size+26);
+  ctx.restore();
+}
+
+function drawCrosshair(){
+  if(gameState!=='playing')return;
+  const cx=mouseX,cy=mouseY,r=28,gap=8;
+  ctx.save();ctx.strokeStyle='rgba(255,200,0,0.85)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  [[cx-r-gap,cy,cx-gap,cy],[cx+gap,cy,cx+r+gap,cy],[cx,cy-r-gap,cx,cy-gap],[cx,cy+gap,cx,cy+r+gap]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+  ctx.fillStyle='rgba(255,100,0,0.9)';ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function showOverlay(stateIdx){
+  const d=STATES[stateIdx];
+  document.getElementById('ov-name').textContent=d.name+' — ELIMINATED';
+  document.getElementById('ov-state').textContent='State: '+d.state;
+  document.getElementById('ov-capital').innerHTML='🏛 Capital: <strong>'+d.capital+'</strong>';
+  document.getElementById('ov-oneliner').textContent='"'+d.oneliner+'"';
+  document.getElementById('ov-dying').innerHTML='<b>Last breath:</b> '+d.dying;
+  document.getElementById('ov-response').innerHTML='<b>Your reply:</b> "'+d.response+'"';
+  buildMCAS(stateIdx);
+  document.getElementById('overlay').style.display='block';
+}
+
+function buildMCAS(stateIdx){
+  roundAnswers=0;
+  const qs=MCAS[stateIdx];
+  const container=document.getElementById('mcas-questions');
+  container.innerHTML='';
+  document.getElementById('mcas-round-score').textContent='';
+  document.getElementById('next-btn').style.display='none';
+
+  qs.forEach((q,qi)=>{
+    const div=document.createElement('div');div.className='mcas-q';
+    const qp=document.createElement('p');qp.className='mcas-qtext';qp.textContent='Q'+(qi+1)+': '+q.q;
+    div.appendChild(qp);
+    q.choices.forEach(c=>{
+      const btn=document.createElement('button');btn.className='mcas-btn';btn.textContent=c;
+      btn.addEventListener('click',function(){
+        if(btn.disabled)return;
+        // Disable all buttons for this question
+        div.querySelectorAll('.mcas-btn').forEach(b=>{
+          b.disabled=true;
+          if(b.textContent[0]===q.ans) b.classList.add('correct');
+        });
+        if(c[0]!==q.ans) btn.classList.add('wrong');
+        else mcasCorrect++;
+        div.querySelector('.mcas-explain').style.display='block';
+        roundAnswers++;
+        updateMCASProgress(stateIdx);
+      });
+      div.appendChild(btn);
+    });
+    const exp=document.createElement('p');exp.className='mcas-explain';exp.textContent='✔ '+q.explain;
+    div.appendChild(exp);
+    container.appendChild(div);
+  });
+}
+
+function updateMCASProgress(stateIdx){
+  const qs=MCAS[stateIdx];
+  // Count correct in this round
+  const roundCorrect=document.querySelectorAll('#mcas-questions .mcas-btn.correct:disabled').length;
+  document.getElementById('mcas-running').textContent=mcasCorrect;
+  document.getElementById('mcas-possible').textContent=mcasAnswered + roundAnswers;
+  document.getElementById('mcas-round-score').textContent='This round: '+roundCorrect+'/'+roundAnswers+' correct';
+  if(roundAnswers===3){
+    mcasAnswered+=3;
+    document.getElementById('mcas-possible').textContent=mcasAnswered;
+    document.getElementById('mcas-round-score').textContent='Round complete: '+roundCorrect+'/3 correct. Scroll down for next target.';
+    const btn=document.getElementById('next-btn');
+    btn.textContent=currentIdx>=STATES.length?'MISSION COMPLETE ★':'NEXT TARGET →';
+    btn.style.display='block';
+    // Scroll to show the next button
+    setTimeout(()=>{
+      btn.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },200);
+  }
+}
+
+function hideOverlay(){
+  document.getElementById('overlay').style.display='none';
+}
+
+function nextTarget(){
+  hideOverlay();
+  if(currentIdx>=STATES.length){endGame();return;}
+  spawnTarget(currentIdx);
+  updateHUD();
+  document.getElementById('instruction').style.display='block';
+}
+
+function updateHUD(){
+  if(currentIdx<STATES.length){
+    document.getElementById('state-label').textContent='State: '+STATES[currentIdx].state;
+    document.getElementById('target-label').textContent='Target: '+STATES[currentIdx].name;
+  }
+  document.getElementById('kill-count').textContent=kills;
+  document.getElementById('shots-count').textContent=shots;
+  document.getElementById('mcas-running').textContent=mcasCorrect;
+  document.getElementById('mcas-possible').textContent=mcasAnswered;
+}
+
+function endGame(){
+  gameState='gameover';
+  document.getElementById('go-shots').textContent=shots;
+  document.getElementById('go-kills').textContent=kills;
+  document.getElementById('go-mcas-score').textContent=mcasCorrect;
+  document.getElementById('go-mcas-pct').textContent=Math.round(mcasCorrect/33*100)+'%';
+  document.getElementById('gameover').style.display='block';
+}
+
+function startGame(){
+  gameState='playing';currentIdx=0;kills=0;shots=0;mcasCorrect=0;mcasAnswered=0;roundAnswers=0;
+  targets=[];particles=[];
+  document.getElementById('splash').style.display='none';
+  document.getElementById('gameover').style.display='none';
+  document.getElementById('ammo').style.display='block';
+  document.getElementById('instruction').style.display='block';
+  spawnTarget(currentIdx);updateHUD();
+}
+
+document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;});
+
+canvas.addEventListener('click',e=>{
+  if(gameState!=='playing')return;
+  if(document.getElementById('overlay').style.display==='block')return;
+  shots++;muzzleFlash=1;screenShake=8;
+  const t=targets[0];
+  if(t&&t.alive){
+    const dx=e.clientX-t.x,dy=e.clientY-t.y;
+    if(Math.sqrt(dx*dx+dy*dy)<t.size*1.5){
+      t.alive=false;kills++;currentIdx++;
+      spawnParticles(t.x,t.y);
+      document.getElementById('instruction').style.display='none';
+      setTimeout(()=>{showOverlay(currentIdx-1);updateHUD();},400);
+    }
+  }
+  updateHUD();
+});
+
+document.getElementById('start-btn').addEventListener('click',startGame);
+document.getElementById('next-btn').addEventListener('click',nextTarget);
+document.getElementById('replay-btn').addEventListener('click',()=>{document.getElementById('gameover').style.display='none';startGame();});
+
+let lastTime=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  const dt=Math.min((ts-lastTime)/16,3);lastTime=ts;
+  ctx.save();
+  if(screenShake>0){ctx.translate((Math.random()-0.5)*screenShake,(Math.random()-0.5)*screenShake);screenShake*=0.75;}
+  drawBG();
+  if(gameState==='playing'){
+    targets.forEach(t=>{
+      if(!t.alive)return;
+      t.x+=t.vx*dt;t.y+=t.vy*dt;
+      if(t.x<60||t.x>W-60)t.vx*=-1;
+      if(t.y<60||t.y>H*0.55)t.vy*=-1;
+    });
+  }
+  targets.forEach(drawTarget);
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.life-=0.04;ctx.save();ctx.globalAlpha=p.life;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();ctx.restore();});
+  if(muzzleFlash>0){ctx.save();ctx.globalAlpha=muzzleFlash*0.3;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);ctx.restore();muzzleFlash-=0.15*dt;}
+  drawCrosshair();
+  ctx.restore();
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
